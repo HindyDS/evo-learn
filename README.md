@@ -1,2 +1,2 @@
-![Logo](http://francky.me/images/quora001.png)
+![Logo](https://github.com/HindyDS/evo-learn/blob/main/logo/evolearn.png)
 Evolutionary Algorithm For Machine Learning
