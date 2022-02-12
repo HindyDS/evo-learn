@@ -101,9 +101,11 @@ class RouletteWheelSelection:
         # Selecting (sampling) candidates from the distribution
         selected_idx = np.random.choice(a=population.index, size=pct_survivors, p=prob, replace=False)
 
+        population = population.loc[selected_idx]
+
         self.survived_population_size.append(len(population))
 
-        return population.loc[selected_idx]
+        return population
 
 
 class SteadyStateSelection:
