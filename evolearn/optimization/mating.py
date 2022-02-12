@@ -80,12 +80,12 @@ class MatingFunction:
                 families_idxes = np.random.choice(a=range(len(families)), size=2, replace=False)
 
                 # Randomly pick one member from family one
-                family1 = families[0][1].drop(['__parents__', '__fitness__'], axis=1)
+                family1 = families[families_idxes[0]][1].drop(['__parents__', '__fitness__'], axis=1)
                 family_idx1 = np.random.choice(a=range(len(family1)))
                 member1 = family1.iloc[[family_idx1]]
 
                 # Randomly pick one member from family two
-                family2 = families[1][1].drop(['__parents__', '__fitness__'], axis=1)
+                family2 = families[families_idxes[1]][1].drop(['__parents__', '__fitness__'], axis=1)
                 family_idx2 = np.random.choice(a=range(len(family2)))
                 member2 = family2.iloc[[family_idx2]]
 
