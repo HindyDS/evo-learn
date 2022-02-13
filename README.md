@@ -129,9 +129,9 @@ For example:
                                                     Elitism
                                                     )
 
-    from evolearn.feature_selection.genetic_feature_selection import GeneticFeatureSelection
+    from evolearn.feature_selection.genetic_feature_selection import GeneticFeatureSelectionCV
     from sklearn.ensemble import RandomForestRegressor
-    opt = GeneticFeatureSelection(
+    opt = GeneticFeatureSelectionCV(
        n_gen=10,
        initialization_fn=Genes(pop_size=50),
        fitness_fn=FitnessFunction(
