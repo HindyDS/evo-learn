@@ -1,31 +1,39 @@
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import warnings
-from datetime import datetime
+import pandas as pd
+from evolearn.hyperparameter_tuning.initialization import Genes
+from evolearn.hyperparameter_tuning.evaluation import FitnessFunction
+from evolearn.hyperparameter_tuning.selection import (RankSelection,
+                                                      RouletteWheelSelection,
+                                                      SteadyStateSelection,
+                                                      TournamentSelection,
+                                                      StochasticUniversalSampling,
+                                                      BoltzmannSelection
+                                                      )
 
-from evolearn.feature_selection.initialization import Genes
-from evolearn.feature_selection.evaluation import FitnessFunction
-from evolearn.feature_selection.selection import (RankSelection,
-                                        RouletteWheelSelection,
-                                        SteadyStateSelection,
-                                        TournamentSelection,
-                                        StochasticUniversalSampling,
-                                        BoltzmannSelection
-                                        )
-from evolearn.feature_selection.mating import MatingFunction
-from evolearn.hyperparameter_tuning.reproduction import KPointCrossover
-from evolearn.feature_selection.mutation import (BitStringMutation,
-                                        ExchangeMutation,
-                                        ShiftMutation)
+from evolearn.hyperparameter_tuning.mating import MatingFunction
+from evolearn.hyperparameter_tuning.reproduction import (KPointCrossover,
+                                                         LinearCombinationCrossover,
+                                                         FitnessProportionateAverage
+                                                         )
 
-class GeneticFeatureSelectionCV:
-    """Genetic feature selection over a set of features.
+from evolearn.hyperparameter_tuning.mutation import (Boundary,
+                                                     Shrink
+                                                     )
+
+from evolearn.hyperparameter_tuning.environment import (AdaptiveReproduction,
+                                                        AdaptiveMutation,
+                                                        Elitism
+                                                        )
+
+from evolearn.hyperparameter_tuning.experimental.reproduction import AvergeReproduction
+
+class GenesSearchCV:
+    """Genetic hyperparameter_tuning over hyper parameters.
     GenesSearchCV implements a "fit" method.
 
     The parameters of the estimator used to apply these methods are optimized
     by cross-validated search over parameter settings.
-    GeneticFeatureSelection will reproduce new parameter values in each generation. The
+    GenesSearchCV will reproduce new parameter values in each generation. The
     evolution processes is mostly probabilistic.
 
     Parameters
@@ -138,7 +146,37 @@ class GeneticFeatureSelectionCV:
     survived_population_size : list
        Population size of each generation after selection"""
 
-    def __init__(self, n_gen:int, initialization_fn, fitness_fn, selection_fn, mating_fn, reproduction_fn, mutation_fn, adaptive_population=None, elitism=None, adaptive_mutation=None):
+    def __init__(self, n_gen: int, initialization_fn, fitness_fn, selection_fn, mating_fn, reproduction_fn, mutation_fn, adaptive_population=None, elitism=None, adaptive_mutation=None):
+        if type(initialization_fn) not in [Genes]:
+            raise Exception('Incorrect arguemnt for initialization_fn.')
+
+        if type(fitness_fn) not in  [FitnessFunction]:
+            raise Exception('Incorrect arguemnt for fitness_fn.')
+
+        if type(selection_fn) not in [RankSelection, RouletteWheelSelection, SteadyStateSelection, TournamentSelection, StochasticUniversalSampling, BoltzmannSelection]:
+            raise Exception('Incorrect arguemnt for selection_fn.')
+
+        if type(mating_fn) not in [MatingFunction]:
+            raise Exception('Incorrect arguemnt for mating_fn.')
+
+        if type(reproduction_fn) not in [KPointCrossover, LinearCombinationCrossover, AvergeReproduction, FitnessProportionateAverage]:
+            raise Exception('Incorrect arguemnt for reproduction_fn.')
+
+        if type(mutation_fn) not in [Boundary, Shrink]:
+            raise Exception('Incorrect arguemnt for mutation_fn.')
+
+        if type(adaptive_population) not in [AdaptiveReproduction, type(None)]:
+            raise Exception('Incorrect arguemnt for adaptive_population.')
+
+        if type(elitism) not in [Elitism, type(None)]:
+            raise Exception('Incorrect arguemnt for elitism.')
+
+        if type(adaptive_mutation) not in [AdaptiveMutation, type(None)]:
+            raise Exception('Incorrect arguemnt for adaptive_mutation.')
+
+        if (type(reproduction_fn) in [LinearCombinationCrossover, AvergeReproduction, FitnessProportionateAverage]) and (initialization_fn.all_str):
+            raise Exception('LinearCombinationCrossover and FitnessProportionateAverage only works if all hyperparameters in given searching space are numeric.')
+
         self.n_gen = n_gen
         self.initialization_fn = initialization_fn
         self.fitness_fn = fitness_fn
@@ -151,9 +189,26 @@ class GeneticFeatureSelectionCV:
         self.adaptive_mutation = adaptive_mutation
 
     def fit(self, X, y):
+        """Run fit on the estimator with randomly drawn parameters.
+        Parameters
+        ----------
+        X : array-like or sparse matrix, shape = [n_samples, n_features]
+            The training input samples.
+        y : array-like, shape = [n_samples] or [n_samples, n_output]
+            Target relative to X for classification or regression (class
+            labels should be integers or strings).
+        """
+
         gen = 1
-        population = self.initialization_fn._populate(X)
+
+        # Initialize the population
+        population = self.initialization_fn._populate()
         while True:
+            # Check if the population is empty, is so, stop searching
+            if isinstance(population, type(None)):
+                print('Population Extincted')
+                break
+
             # Evaluate their fitness
             population = self.fitness_fn._evaluate(population, X, y)
 
@@ -185,18 +240,10 @@ class GeneticFeatureSelectionCV:
                     # update pop ratio of mating function
                     self.mating_fn.pop_ratio = pop_ratio
 
-            # Check if the population is empty, is so, stop searching
-            if isinstance(population, type(None)):
-                print('Population Extincted')
-                break
-
+            # Forming pairs of parents
             population = self.mating_fn._pair(population)
 
-            if population == None:
-                cuerrent_time = datetime.now().strftime("%H:%M:%S")
-                warnings.warn(f'[{cuerrent_time}] Early Stopping Warning: Early stopping triggered.')
-                break
-
+            # Reproduce next generation
             population = self.reproduction_fn._reproduce(population, gen)
 
             # Drop elites before evaluation
@@ -212,16 +259,14 @@ class GeneticFeatureSelectionCV:
                 print('Population Extincted')
                 break
 
+            # Mutate the next generation
             population = self.mutation_fn._mutate(population)
 
-            # Check if the population is empty, is so, stop searching
-            if isinstance(population, type(None)):
-                print('Population Extincted')
+            # If maximum number of generation reached, stop searching
+            if gen >= self.n_gen:
                 break
 
             gen += 1
-            if gen == self.n_gen:
-                break
 
         # Store attributes
         self.best_params_ = self.fitness_fn.best_params_
