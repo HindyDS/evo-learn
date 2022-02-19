@@ -15,14 +15,14 @@ Genetic Optimization CV
 To perform hyperparameter tuning using genetic algoritm,
 you need to first import other modules from 
 
-1) ``evolearn.optimization.initialization``
-2) ``evolearn.optimization.evaluation``
-3) ``evolearn.optimization.selection``
-4) ``evolearn.optimization.mating``
-5) ``evolearn.optimization.reproduction``
-6) ``evolearn.optimization.mutation``
-7) ``evolearn.optimization.environment`` (optional)
-8) ``evolearn.optimization.genetic_optimization`` 
+1) ``evolearn.hyperparameter_tuning.initialization``
+2) ``evolearn.hyperparameter_tuning.evaluation``
+3) ``evolearn.hyperparameter_tuning.selection``
+4) ``evolearn.hyperparameter_tuning.mating``
+5) ``evolearn.hyperparameter_tuning.reproduction``
+6) ``evolearn.hyperparameter_tuning.mutation``
+7) ``evolearn.hyperparameter_tuning.environment`` (optional)
+8) ``evolearn.hyperparameter_tuning.genetic_hyperparameter_tuning`` 
 
 Although the modules from ``environment`` are optional for you to determine to
 use them in your search or not, the searching might end up stopping early or not 
@@ -31,28 +31,28 @@ and also control other hyperparameters for GA.
 
 For example:
 
-    from evolearn.optimization.initialization import Genes
-    from evolearn.optimization.evaluation import FitnessFunction
-    from evolearn.optimization.selection import (RankSelection,
-                                                RouletteWheelSelection,
-                                                SteadyStateSelection,
-                                                TournamentSelection,
-                                                StochasticUniversalSampling,
-                                                BoltzmannSelection
-                                                )
-    from evolearn.optimization.mating import MatingFunction
-    from evolearn.optimization.reproduction import (KPointCrossover,
-                                                   LinearCombinationCrossover,
-                                                   FitnessProportionateAverage
-                                                   )
-    from evolearn.optimization.mutation import (Boundary,
-                                               Shrink
-                                               )
-    from evolearn.optimization.environment import (AdaptiveReproduction,
-                                                  AdaptiveMutation,
-                                                  Elitism
-                                                  )
-    from evolearn.optimization.genetic_optimization import GenesSearchCV
+    from evolearn.hyperparameter_tuning.initialization import Genes
+    from evolearn.hyperparameter_tuning.evaluation import FitnessFunction
+    from evolearn.hyperparameter_tuning.selection import (RankSelection,
+                                               				RouletteWheelSelection,
+                                                				SteadyStateSelection,
+                                                				TournamentSelection,
+                                                				StochasticUniversalSampling,
+                                                				BoltzmannSelection
+                                                				)
+    from evolearn.hyperparameter_tuning.mating import MatingFunction
+    from evolearn.hyperparameter_tuning.reproduction import (KPointCrossover,
+                                                   			      LinearCombinationCrossover,
+                                                   			      FitnessProportionateAverage
+                                                 				      )
+    from evolearn.hyperparameter_tuning.mutation import (Boundary,
+                                               				Shrink
+                                              				 )
+    from evolearn.hyperparameter_tuning.environment import (AdaptiveReproduction,
+                                                  			     AdaptiveMutation,
+                                                  			     Elitism
+                                                  			     )
+    from evolearn.hyperparameter_tuning.genetic_hyperparameter_tuning import GenesSearchCV
     from sklearn.ensemble import RandomForestRegressor
     search_space_rf = {
               'max_depth':(1, 16, 'uniform'),
@@ -99,7 +99,7 @@ you need to first import other modules from
 5) ``evolearn.feature_selection.reproduction``
 6) ``evolearn.feature_selection.mutation``
 7) ``evolearn.feature_selection.environment`` (optional)
-8) ``evolearn.feature_selection.genetic_optimization`` 
+8) ``evolearn.feature_selection.genetic_feature_selection`` 
 
 The modules looks similar to those modules from the 
 ``GenesSearchCV`` section, but in fact their internal mechanisim 
