@@ -2,6 +2,8 @@
 
 Evolutionary Algorithm For Machine Learning
 
+For detailed documentation: https://evolearndoc.readthedocs.io/en/latest/index.html
+
 Installation
 ------------
 
